@@ -1,0 +1,12 @@
+str1:
+	Size of x has to be between 180 and 184 due to y's alignment.
+
+str2:
+	Size of B has to be between 5 and 8 due to t's alignment. 
+	Size of A has to be between 7 and 10 due to u's alignment.
+
+184/4 = 46. 
+Since 46 does not have a factor between 5 and 8 and between 7 and 10,
+x must have a size of 180.
+180/4 = 45
+Since 45 is divisible by 9 and 5, A must equal 9 and B must equal 5.

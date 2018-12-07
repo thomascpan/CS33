@@ -1,0 +1,16 @@
+-O2:
+Because n + some positive number is always greater than n, the compiler simply 
+does an xor statement which always return false.
+
+-O2 -fwrapv:
+In this code, the compiler generates instructions to actually add n with 
+9223372036854775807. It will then compare and actually return if the sum is 
+less than the original n. It does this because the -fwrapv setting tells the 
+compiler that signed overflow is defined. Because of this, the compiler 
+actually has to generate logic to compare the two values instead of always 
+returning false like the previous setting. 
+
+-O2 -fsanitize=undefined:
+This gives the same result as compiling with just -O2. After looking it up, it 
+looks like the latest version off gcc may have optimized away whatever was 
+supposed to change in assembly.

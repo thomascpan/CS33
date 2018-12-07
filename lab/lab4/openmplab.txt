@@ -1,0 +1,99 @@
+Download the files from CCLE. 
+
+$ scp openmplab.tgz thomasp@lnxsrv06.seas.ucla.edu:/u/cs/grad/thomasp/Documents/cs33/lab/lab4
+$ cd /u/cs/grad/thomasp/Documents/cs33/lab/lab4
+$ tar xvf openmplab.tgz
+$ cd openmplab/
+scp to seasnet and untar.
+
+$ make seq
+gcc -o seq  -O3 filter.c main.c func.c util.c -lm
+$ ./seq
+FUNC TIME : 0.601712
+TOTAL TIME : 2.359972
+$ make seq GPROF=1
+gcc -o seq  -O2 -pg filter.c main.c func.c util.c -lm
+$ ./seq
+FUNC TIME : 1.222593
+TOTAL TIME : 3.042726
+$ gprof seq | less
+Flat profile:
+
+Each sample counts as 0.01 seconds.
+  %   cumulative   self              self     total
+ time   seconds   seconds    calls  ms/call  ms/call  name
+ 58.10      0.47     0.47       15    31.38    40.49  func1
+ 17.31      0.61     0.14  5177344     0.00     0.00  rand2
+ 13.60      0.72     0.11 67829762     0.00     0.00  round
+  3.71      0.75     0.03   491520     0.00     0.00  findIndexBin
+  2.47      0.77     0.02                             sequence
+  1.24      0.78     0.01        2     5.01     5.01  init
+  1.24      0.79     0.01        1    10.01   123.59  addSeed
+  1.24      0.80     0.01        1    10.01    10.01  imdilateDisk
+  1.24      0.81     0.01                             filter
+  0.00      0.81     0.00       16     0.00     0.00  dilateMatrix
+  0.00      0.81     0.00       15     0.00     0.00  func2
+  0.00      0.81     0.00       15     0.00     0.00  func3
+  0.00      0.81     0.00       15     0.00     0.00  func4
+  0.00      0.81     0.00       15     0.00     2.00  func5
+  0.00      0.81     0.00       15     0.00     0.00  rand1
+  0.00      0.81     0.00        2     0.00     0.00  get_time
+  0.00      0.81     0.00        1     0.00     0.00  elapsed_time
+  0.00      0.81     0.00        1     0.00     0.00  fillMatrix
+  0.00      0.81     0.00        1     0.00     0.00  func0
+  0.00      0.81     0.00        1     0.00     0.00  getNeighbors
+  ...
+
+Make program and run to get a sense of current speed. 
+Make program with GPROF so I can analyze and determine which parts of the program are taking up the most execution time. The largest part by far is func1. This lets me know that I should focus on 
+optimizing it first. 
+
+$ make check
+gcc -o omp  -O3 -fopenmp func.c main.c filter.c util.c -lm
+cp omp filter
+./filter
+FUNC TIME : 0.601954
+TOTAL TIME : 2.423159
+diff --brief correct.txt output.txt
+
+Make program with openmp and with no modifications to get a sense of current speed.
+
+$ cat func.c > func1.c
+Create a copy of func1.c, a copy of func.c so that I experiment with openmp.
+
+$ make check SRC=func1.c
+gcc -o omp  -O3 -fopenmp func1.c main.c filter.c util.c -lm
+cp omp filter
+./filter
+FUNC TIME : 0.504150
+TOTAL TIME : 2.344930
+diff --brief correct.txt output.txt
+
+The first thing I do is check to see if I can parallelize func1's first for loop. Modifications to arrayX and arrayY are safe because they target different elements on each loop. seed is also thread 
+safe because it also targets different elements on each loop. The only thing that I need to consider is make sure that there is no race condition for reading and updating i. To parallelize this 
+section is use #pragma omp parallel private(i) for which divides up the loop amongst the different threads and parallelizes them.
+
+$ make check SRC=func1.c
+gcc -o omp  -O3 -fopenmp func1.c main.c filter.c util.c -lm
+cp omp filter
+./filter
+FUNC TIME : 0.050482
+TOTAL TIME : 1.871837
+diff --brief correct.txt output.txt
+
+The next thing I do is check to see if I can parallelize func1's second loop the same way I parallelized the first loop. Since all the elements being operated on are determined by the index, it looks 
+safe to use the same method, and I use #pragma omp parallel private(i) again. However, I notice that this strategy can be used on all the loops in functions func0 to func5. So I apply the same logic 
+to all my loops. 
+
+The next thing I want to optimize are the accumulators. So I used the "reduction" clause on accumulators: sumWeights, estimate_x, and estimate_y. There are actually more accumulators like 
+"probability[i]", but I wasn't able to figure out how to use "reduction" on elements of arrays. 
+
+Looking through the documentation, I also found the clause "simd" which basically optimizes the code to use single instruction, multiple data. So I add those to all my #pragma omp parallel 
+statements. 
+
+Lastly, I edit/rewrite the logic of each functions. I merge loops, hoist calculations out of loops, and add my own accumulators. 
+
+In conclusion, with these optimizations, I was able to get a speedup of approximately 12 times.
+
+Additional remark. When I initially completed and tested my code it was at ~2am Saturday. However, after retesting my code on 3pm Wednesday, my speedup was completely gone. After making more edits 
+and testing, I was able to bring the speed back down by specifically setting the number of threads. However, the behavior and performance is extremely inconsistentl.

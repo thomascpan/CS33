@@ -1,0 +1,42 @@
+gdb ~eggert/bin64/bin/emacs-26.1
+Run emacs with GDB.
+
+break Ftimes
+Set breakpoint on function Ftimes.
+
+set disassemble-next-line on
+GDB will display disassembly of the next source line when execution of the 
+program being debugged stops.
+
+r -Q -batch -eval '(print (* 1250284240 -1844255039))'
+Run emacs command.
+
+si
+Execute one machine instruction.
+
+info registers
+Prints the current state of all registers.
+
+x <address>
+To examine stored value in memory.
+
+list
+To show the surrounding source code.
+
+grep -nr "<search term>" ~eggert/src/emacs-26.1/src/
+
+
+After setting my breakpoint, I would execute or step through each machine 
+instruction. If encountered an instruction that would change a register value, 
+I would print out the state of the registers. This includes jmp operations as 
+well. If I encountered an instruction that changed the state of a memoery 
+location, I would examine the address to get the state of the memory locaiton. 
+I would continue this until Ftimes completes.
+
+For the remaining part of the lab, I would use list (gdb) and grep to help 
+figure out why elisp was returning the wrong values.
+
+Things to watch out for. I had to becareful not to "si" too quickly or else I'd 
+have to start over if I forgot to capture the state of the memory or registers. 
+Also, the correct way to examine a memory location is to use syntax like "$r14 
++ $rbx * 0x8."

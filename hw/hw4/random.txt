@@ -1,0 +1,42 @@
+A.
+Yes.
+(double) x. The exact numeric value is preserved because double has both 
+greater range and greater precision. 
+(float) dx. Although such a conversion can overflow, since dx was converted 
+from a 32 bit number, it will not overflow in this case. However the conversion 
+can still be rounded. 
+(float) x. The conversion may be rounded.
+In short, the expression will always be true because numeric value is preserved 
+when converting an int to a double. 
+
+B.	
+No.
+Although the conversion from int to double will preserve the numeric value, it 
+is possible that x-y may result in an overflow first. dx-dy does not overflow.
+x = INT_MIN;
+y = 1;
+dx - dy != (double) (x - y);
+
+C.	
+Yes.
+Despite floating point expressions not being associative, the range is large 
+enough where this will not be a problem.
+
+D.	
+No.
+Since double multiplication can result in rounding, the different orders in the 
+two expressions can result in different rounded values, leading to different 
+final values.
+int x = INT_MAX;
+int y = INT_MAX;
+int z = 123456789;
+(dx*dy)*dz) = 569343947180997290535944192.000000
+dx*(dy*dz) = 569343947180997221816467456.000000
+
+E.	
+No. 
+dx/dx != dz/dz
+x = 0;
+z = 1;
+dx/dx = -NaN;
+dz/dz = 1.0;

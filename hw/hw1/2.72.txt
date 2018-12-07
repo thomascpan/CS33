@@ -1,0 +1,12 @@
+A.
+size_t is an unsigned int.
+maxbytes is a signed int.
+A signed int is converted to an unsigned int when an expression contains both unsigned and signed ints. 
+Because the result will be unsigned, maxbytes-sizeof(val) can never be below 0.
+
+B.
+void copy_int(int val, void *buf, int maxbytes) {
+	// sizeof(val) to signed int to allow for negative numbers.
+	if (maxbytes-(signed int)sizeof(val) >= 0)
+		memcpy(buf, (void *) &val, sizeof(val));
+}

@@ -1,0 +1,42 @@
+A. 	(x < y) == (-x > -y)
+	False.
+	x = INT_MIN
+	y = 1
+	-x is still INT_MIN, but -y is only -1, thus making the expression false. 
+
+B. 	((x + y) << 4) + y - x == 17 * y + 15 * x
+	True.
+	((x + y) * (2^4)) + y - x
+	((x + y) * 16) + y - x
+	16x + 16y + y - x
+	17y + 15x
+
+C. 	~x + ~y + 1 == ~(x + y)
+	True.
+	A negated integer is always 1 less than its opposite signed integer. 
+	~(x + y) will be 1 less than -(x+y).
+	~x + ~y will be 2 less than -(x+y) because it is being negated twice.
+	Thus 1 will need to be added to ~x + ~y in order to make it equal to ~(x+y) making these two expressions equal.
+	
+D. 	(ux - uy) == -(unsigned) (y - x)
+	True
+	(x - y) == -(y - x)
+	(x - y) == (-y + x)
+	(x - y) == (x - y)
+	We can ignore the unsigned parts because casting always keeps the integer the same bitwise. 
+
+E. 	((x >> 2) << 2) <= x
+	True.
+	Shifting an integer right and then left by 2 will cause the two lower bits to become 0. 
+	This makes both positive and negative numbers smaller if the original two bits were 1s. 
+
+F. 	x >> 1 == (ux >> 1) + (ux & (-1 << 31))
+	True.
+	x >> 1 does a arithmetic left shift. Keeping the signed bit. 
+	(ux >> 1) + (ux & (-1 << 31)) does a logical left shift. Losing the signed bit. But adds it back by capturing the original most significant bit. 
+
+G. 	x % 8 == (x & 7)
+	False.
+	x == -1;
+	x % 8 == -1
+	x & 7 == 7
